@@ -1,7 +1,7 @@
 package Perinci::Access::Lite;
 
 our $DATE = '2014-09-03'; # DATE
-our $VERSION = '0.01'; # VERSION
+our $VERSION = '0.02'; # VERSION
 
 use 5.010001;
 use strict;
@@ -93,8 +93,40 @@ sub request {
         } else {
             return [502, "Unknown/unsupported action '$action'"];
         }
-    } elsif (0 && $url =~ m!\Ahttps?:/(/?)!i) {
+    } elsif ($url =~ m!\Ahttps?:/(/?)!i) {
         my $is_unix = !$1;
+        my $ht;
+        require JSON;
+        state $json = JSON->new->allow_nonref;
+        if ($is_unix) {
+            require HTTP::Tiny::UNIX;
+            $ht = HTTP::Tiny::UNIX->new;
+        } else {
+            require HTTP::Tiny;
+            $ht = HTTP::Tiny->new;
+        }
+        my %headers = (
+            "x-riap-action" => $action,
+            "x-riap-fmt" => "json",
+            "content-type" => "application/json",
+        );
+        my $args = $extra->{args} // {};
+        for (keys %$extra) {
+            next if /\Aargs\z/;
+            $headers{"x-riap-$_"} = $extra->{$_};
+        }
+        my $htres = $ht->post(
+            $url, {
+                headers => \%headers,
+                content => $json->encode($args),
+            });
+        return [500, "Network error: $htres->{status} - $htres->{reason}"]
+            if $htres->{status} != 200;
+        return [500, "Server error: didn't return JSON (".$htres->{headers}{'content-type'}.")"]
+            unless $htres->{headers}{'content-type'} eq 'application/json';
+        return [500, "Server error: didn't return Riap 1.1 response (".$htres->{headers}{'x-riap-v'}.")"]
+            unless $htres->{headers}{'x-riap-v'} =~ /\A1\.1(\.\d+)?\z/;
+        return $json->decode($htres->{content});
     } else {
         return [502, "Unsupported scheme or bad URL '$url'"];
     }
@@ -115,7 +147,7 @@ Perinci::Access::Lite - A lightweight Riap client library
 
 =head1 VERSION
 
-This document describes version 0.01 of Perinci::Access::Lite (from Perl distribution Perinci-Access-Lite), released on 2014-09-03.
+This document describes version 0.02 of Perinci::Access::Lite (from Perl distribution Perinci-Access-Lite), released on 2014-09-03.
 
 =head1 DESCRIPTION
 

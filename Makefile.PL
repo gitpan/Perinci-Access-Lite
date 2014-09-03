@@ -20,6 +20,9 @@ my %WriteMakefileArgs = (
   "LICENSE" => "perl",
   "NAME" => "Perinci::Access::Lite",
   "PREREQ_PM" => {
+    "HTTP::Tiny" => 0,
+    "HTTP::Tiny::UNIX" => 0,
+    "JSON" => 0,
     "Perinci::Sub::ConvertArgs::Array" => 0,
     "Perinci::Sub::Normalize" => 0,
     "Riap" => "v1.1.23",
@@ -31,7 +34,7 @@ my %WriteMakefileArgs = (
     "IPC::Open3" => 0,
     "Test::More" => 0
   },
-  "VERSION" => "0.01",
+  "VERSION" => "0.02",
   "test" => {
     "TESTS" => "t/*.t"
   }
@@ -40,8 +43,11 @@ my %WriteMakefileArgs = (
 
 my %FallbackPrereqs = (
   "File::Spec" => 0,
+  "HTTP::Tiny" => 0,
+  "HTTP::Tiny::UNIX" => 0,
   "IO::Handle" => 0,
   "IPC::Open3" => 0,
+  "JSON" => 0,
   "Perinci::Sub::ConvertArgs::Array" => 0,
   "Perinci::Sub::Normalize" => 0,
   "Riap" => "v1.1.23",

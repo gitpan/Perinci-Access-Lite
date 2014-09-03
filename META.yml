@@ -17,6 +17,9 @@ meta-spec:
   version: '1.4'
 name: Perinci-Access-Lite
 requires:
+  HTTP::Tiny: '0'
+  HTTP::Tiny::UNIX: '0'
+  JSON: '0'
   Perinci::Sub::ConvertArgs::Array: '0'
   Perinci::Sub::Normalize: '0'
   Riap: v1.1.23
@@ -26,7 +29,7 @@ resources:
   bugtracker: https://rt.cpan.org/Public/Dist/Display.html?Name=Perinci-Access-Lite
   homepage: https://metacpan.org/release/Perinci-Access-Lite
   repository: git://github.com/perlancar/perl-Perinci-Access-Lite.git
-version: '0.01'
+version: '0.02'
 x_Dist_Zilla:
   perl:
     version: '5.018002'

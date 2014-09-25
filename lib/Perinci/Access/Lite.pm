@@ -1,7 +1,7 @@
 package Perinci::Access::Lite;
 
-our $DATE = '2014-09-03'; # DATE
-our $VERSION = '0.02'; # VERSION
+our $DATE = '2014-09-21'; # DATE
+our $VERSION = '0.03'; # VERSION
 
 use 5.010001;
 use strict;
@@ -34,10 +34,22 @@ sub request {
     if ($url =~ m!\A(?:pl:)?/(\w+(?:/\w+)*)/(\w*)\z!) {
         my ($mod, $func) = ($1, $2);
         # skip if package already exists, e.g. 'main'
-        require "$mod.pm" unless __package_exists($mod);
+        unless (__package_exists($mod)) {
+            eval { require "$mod.pm" };
+            return [500, "Can't load module $mod: $@"] if $@;
+        }
         $mod =~ s!/!::!g;
 
-        if ($action eq 'meta' || $action eq 'call') {
+        if ($action eq 'list') {
+            return [502, "Action 'list' not implemented for ".
+                        "non-package entities"]
+                if length($func);
+            no strict 'refs';
+            my $spec = \%{"$mod\::SPEC"};
+            return [200, "OK (list)", [grep {/\A\w+\z/} sort keys %$spec]];
+        } elsif ($action eq 'meta' || $action eq 'call') {
+            return [502, "Action 'call' not implemented for package entity"]
+                if !length($func) && $action eq 'call';
             my $meta;
             {
                 no strict 'refs';
@@ -53,7 +65,7 @@ sub request {
 
             require Perinci::Sub::Normalize;
             $meta = Perinci::Sub::Normalize::normalize_function_metadata($meta);
-            return [200, "OK", $meta] if $action eq 'meta';
+            return [200, "OK ($action)", $meta] if $action eq 'meta';
 
             # convert args
             my $args = $extra->{args} // {};
@@ -147,14 +159,36 @@ Perinci::Access::Lite - A lightweight Riap client library
 
 =head1 VERSION
 
-This document describes version 0.02 of Perinci::Access::Lite (from Perl distribution Perinci-Access-Lite), released on 2014-09-03.
+This document describes version 0.03 of Perinci::Access::Lite (from Perl distribution Perinci-Access-Lite), released on 2014-09-21.
 
 =head1 DESCRIPTION
 
 This module is a lightweight alternative to L<Perinci::Access>. It has less
-prerequisites but does fewer things. Differences with Perinci::Access:
+prerequisites but does fewer things. The things it supports:
 
 =over
+
+=item * Local (in-process) access to Perl modules and functions
+
+Currently only C<call>, C<meta>, and C<list> actions are implemented. Variables
+and other entities are not yet supported.
+
+The C<list> action only gathers keys from C<%SPEC> and do not yet list
+subpackages.
+
+=item * HTTP/HTTPS
+
+=item * HTTP over Unix socket
+
+=back
+
+Differences with Perinci::Access:
+
+=over
+
+=item * For network access, uses HTTP::Tiny module family instead of LWP
+
+This results in fewer dependencies.
 
 =item * No wrapping, no argument checking
 

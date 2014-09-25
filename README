@@ -2,12 +2,30 @@ NAME
     Perinci::Access::Lite - A lightweight Riap client library
 
 VERSION
-    This document describes version 0.02 of Perinci::Access::Lite (from Perl
-    distribution Perinci-Access-Lite), released on 2014-09-03.
+    This document describes version 0.03 of Perinci::Access::Lite (from Perl
+    distribution Perinci-Access-Lite), released on 2014-09-21.
 
 DESCRIPTION
     This module is a lightweight alternative to Perinci::Access. It has less
-    prerequisites but does fewer things. Differences with Perinci::Access:
+    prerequisites but does fewer things. The things it supports:
+
+    *   Local (in-process) access to Perl modules and functions
+
+        Currently only "call", "meta", and "list" actions are implemented.
+        Variables and other entities are not yet supported.
+
+        The "list" action only gathers keys from %SPEC and do not yet list
+        subpackages.
+
+    *   HTTP/HTTPS
+
+    *   HTTP over Unix socket
+
+    Differences with Perinci::Access:
+
+    *   For network access, uses HTTP::Tiny module family instead of LWP
+
+        This results in fewer dependencies.
 
     *   No wrapping, no argument checking
 

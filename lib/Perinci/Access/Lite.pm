@@ -1,7 +1,7 @@
 package Perinci::Access::Lite;
 
 our $DATE = '2014-10-24'; # DATE
-our $VERSION = '0.05'; # VERSION
+our $VERSION = '0.06'; # VERSION
 
 use 5.010001;
 use strict;
@@ -109,6 +109,14 @@ sub request {
                 $res = [200, "OK (envelope added by ".__PACKAGE__.")", $res];
             }
 
+            # add hint that result is binary
+            if (defined $res->[2]) {
+                if ($meta->{result} && $meta->{result}{schema} &&
+                        $meta->{result}{schema}[0] eq 'buf') {
+                    $res->[3]{'x.hint.result_binary'} = 1;
+                }
+            }
+
         } else {
             return [501, "Unknown/unsupported action '$action'"];
         }
@@ -169,7 +177,7 @@ Perinci::Access::Lite - A lightweight Riap client library
 
 =head1 VERSION
 
-This document describes version 0.05 of Perinci::Access::Lite (from Perl distribution Perinci-Access-Lite), released on 2014-10-24.
+This document describes version 0.06 of Perinci::Access::Lite (from Perl distribution Perinci-Access-Lite), released on 2014-10-24.
 
 =head1 DESCRIPTION
 

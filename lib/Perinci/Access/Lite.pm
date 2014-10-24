@@ -1,7 +1,7 @@
 package Perinci::Access::Lite;
 
-our $DATE = '2014-10-23'; # DATE
-our $VERSION = '0.04'; # VERSION
+our $DATE = '2014-10-24'; # DATE
+our $VERSION = '0.05'; # VERSION
 
 use 5.010001;
 use strict;
@@ -11,6 +11,7 @@ use Perinci::AccessUtil qw(strip_riap_stuffs_from_res);
 
 sub new {
     my ($class, %args) = @_;
+    $args{riap_version} //= 1.1;
     bless \%args, $class;
 }
 
@@ -124,6 +125,7 @@ sub request {
             $ht = HTTP::Tiny->new;
         }
         my %headers = (
+            "x-riap-v" => $self->{riap_version},
             "x-riap-action" => $action,
             "x-riap-fmt" => "json",
             "content-type" => "application/json",
@@ -167,7 +169,7 @@ Perinci::Access::Lite - A lightweight Riap client library
 
 =head1 VERSION
 
-This document describes version 0.04 of Perinci::Access::Lite (from Perl distribution Perinci-Access-Lite), released on 2014-10-23.
+This document describes version 0.05 of Perinci::Access::Lite (from Perl distribution Perinci-Access-Lite), released on 2014-10-24.
 
 =head1 DESCRIPTION
 
@@ -211,9 +213,13 @@ This includes: Riap::Simple over pipe/TCP socket.
 
 =back
 
+=head1 ATTRIBUTES
+
+=head2 riap_version => float (default: 1.1)
+
 =head1 METHODS
 
-=head2 new => obj
+=head2 new(%attrs) => obj
 
 =head2 $pa->request($action, $url, $extra) => hash
 

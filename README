@@ -2,8 +2,8 @@ NAME
     Perinci::Access::Lite - A lightweight Riap client library
 
 VERSION
-    This document describes version 0.04 of Perinci::Access::Lite (from Perl
-    distribution Perinci-Access-Lite), released on 2014-10-23.
+    This document describes version 0.05 of Perinci::Access::Lite (from Perl
+    distribution Perinci-Access-Lite), released on 2014-10-24.
 
 DESCRIPTION
     This module is a lightweight alternative to Perinci::Access. It has less
@@ -38,8 +38,10 @@ DESCRIPTION
 
         This includes: Riap::Simple over pipe/TCP socket.
 
+ATTRIBUTES
+  riap_version => float (default: 1.1)
 METHODS
-  new => obj
+  new(%attrs) => obj
   $pa->request($action, $url, $extra) => hash
 SEE ALSO
     Perinci::Access

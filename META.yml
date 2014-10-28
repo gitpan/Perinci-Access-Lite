@@ -31,7 +31,7 @@ resources:
   bugtracker: https://rt.cpan.org/Public/Dist/Display.html?Name=Perinci-Access-Lite
   homepage: https://metacpan.org/release/Perinci-Access-Lite
   repository: git://github.com/perlancar/perl-Perinci-Access-Lite.git
-version: '0.06'
+version: '0.07'
 x_Dist_Zilla:
   perl:
     version: '5.018002'

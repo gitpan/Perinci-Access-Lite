@@ -1,7 +1,7 @@
 package Perinci::Access::Lite;
 
-our $DATE = '2014-10-24'; # DATE
-our $VERSION = '0.06'; # VERSION
+our $DATE = '2014-10-28'; # DATE
+our $VERSION = '0.07'; # VERSION
 
 use 5.010001;
 use strict;
@@ -41,13 +41,14 @@ sub request {
 
     my $res;
     if ($url =~ m!\A(?:pl:)?/(\w+(?:/\w+)*)/(\w*)\z!) {
-        my ($mod, $func) = ($1, $2);
-        # skip if package already exists, e.g. 'main'
+        my ($modpath, $func) = ($1, $2);
+        (my $mod = $modpath) =~ s!/!::!g;
+        # skip if package already exists, e.g. 'main' or packages from loaded
+        # modules
         unless (__package_exists($mod)) {
-            eval { require "$mod.pm" };
+            eval { require "$modpath.pm" };
             return [500, "Can't load module $mod: $@"] if $@;
         }
-        $mod =~ s!/!::!g;
 
         if ($action eq 'list') {
             return [501, "Action 'list' not implemented for ".
@@ -56,6 +57,15 @@ sub request {
             no strict 'refs';
             my $spec = \%{"$mod\::SPEC"};
             return [200, "OK (list)", [grep {/\A\w+\z/} sort keys %$spec]];
+        } elsif ($action eq 'info') {
+            my $data = {
+                uri => "$modpath/$func",
+                type => (!length($func) ? "package" :
+                             $func =~ /\A\w+\z/ ? "function" :
+                                 $func =~ /\A[\@\$\%]/ ? "variable" :
+                                     "?"),
+            };
+            return [200, "OK (info)", $data];
         } elsif ($action eq 'meta' || $action eq 'call') {
             return [501, "Action 'call' not implemented for package entity"]
                 if !length($func) && $action eq 'call';
@@ -177,7 +187,7 @@ Perinci::Access::Lite - A lightweight Riap client library
 
 =head1 VERSION
 
-This document describes version 0.06 of Perinci::Access::Lite (from Perl distribution Perinci-Access-Lite), released on 2014-10-24.
+This document describes version 0.07 of Perinci::Access::Lite (from Perl distribution Perinci-Access-Lite), released on 2014-10-28.
 
 =head1 DESCRIPTION
 
@@ -230,6 +240,15 @@ This includes: Riap::Simple over pipe/TCP socket.
 =head2 new(%attrs) => obj
 
 =head2 $pa->request($action, $url, $extra) => hash
+
+=head1 ADDED RESULT METADATA
+
+This class might add the following property/attribute in result metadata:
+
+=head2 x.hint.result_binary => bool
+
+If result's schema type is C<buf>, then this class will set this attribute to
+true, to give hints to result formatters.
 
 =head1 SEE ALSO
 

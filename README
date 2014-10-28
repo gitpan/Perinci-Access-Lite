@@ -2,8 +2,8 @@ NAME
     Perinci::Access::Lite - A lightweight Riap client library
 
 VERSION
-    This document describes version 0.06 of Perinci::Access::Lite (from Perl
-    distribution Perinci-Access-Lite), released on 2014-10-24.
+    This document describes version 0.07 of Perinci::Access::Lite (from Perl
+    distribution Perinci-Access-Lite), released on 2014-10-28.
 
 DESCRIPTION
     This module is a lightweight alternative to Perinci::Access. It has less
@@ -43,6 +43,14 @@ ATTRIBUTES
 METHODS
   new(%attrs) => obj
   $pa->request($action, $url, $extra) => hash
+ADDED RESULT METADATA
+    This class might add the following property/attribute in result
+    metadata:
+
+  x.hint.result_binary => bool
+    If result's schema type is "buf", then this class will set this
+    attribute to true, to give hints to result formatters.
+
 SEE ALSO
     Perinci::Access
 

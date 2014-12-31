@@ -1,7 +1,7 @@
 package Perinci::Access::Lite;
 
-our $DATE = '2014-10-28'; # DATE
-our $VERSION = '0.07'; # VERSION
+our $DATE = '2014-12-31'; # DATE
+our $VERSION = '0.08'; # VERSION
 
 use 5.010001;
 use strict;
@@ -32,6 +32,8 @@ sub __package_exists {
 sub request {
     my ($self, $action, $url, $extra) = @_;
 
+    #say "D:request($action => $url)";
+
     $extra //= {};
 
     my $v = $extra->{v} // 1.1;
@@ -42,12 +44,15 @@ sub request {
     my $res;
     if ($url =~ m!\A(?:pl:)?/(\w+(?:/\w+)*)/(\w*)\z!) {
         my ($modpath, $func) = ($1, $2);
-        (my $mod = $modpath) =~ s!/!::!g;
-        # skip if package already exists, e.g. 'main' or packages from loaded
-        # modules
-        unless (__package_exists($mod)) {
+        (my $pkg = $modpath) =~ s!/!::!g;
+        #say "D:modpath=$modpath, pkg=$pkg, package exists? ", __package_exists($pkg);
+        # skip loading module if package already exists, e.g. 'main' (there is
+        # no corresponding module) or packages from loaded modules
+        my $pkg_exists = __package_exists($pkg);
+        unless ($pkg_exists) {
+            #say "D:Loading $pkg ...";
             eval { require "$modpath.pm" };
-            return [500, "Can't load module $mod: $@"] if $@;
+            return [500, "Can't load module $pkg: $@"] if $@;
         }
 
         if ($action eq 'list') {
@@ -55,7 +60,7 @@ sub request {
                         "non-package entities"]
                 if length($func);
             no strict 'refs';
-            my $spec = \%{"$mod\::SPEC"};
+            my $spec = \%{"$pkg\::SPEC"};
             return [200, "OK (list)", [grep {/\A\w+\z/} sort keys %$spec]];
         } elsif ($action eq 'info') {
             my $data = {
@@ -73,13 +78,17 @@ sub request {
             {
                 no strict 'refs';
                 if (length $func) {
-                    $meta = ${"$mod\::SPEC"}{$func}
-                        or return [500, "No metadata for '$url'"];
+                    $meta = ${"$pkg\::SPEC"}{$func}
+                        or return [
+                            500, "No metadata for '$url' (".
+                                ($pkg_exists ? "package '$pkg' exists, perhaps you mentioned '$pkg' somewhere without actually loading the module, or perhaps '$func' is a typo?" :
+                                     "package '$pkg' doesn't exist, perhaps '$modpath' or '$func' is a typo?") .
+                                ")"];
                 } else {
-                    $meta = ${"$mod\::SPEC"}{':package'} // {v=>1.1};
+                    $meta = ${"$pkg\::SPEC"}{':package'} // {v=>1.1};
                 }
-                $meta->{entity_v}    //= ${"$mod\::VERSION"};
-                $meta->{entity_date} //= ${"$mod\::DATE"};
+                $meta->{entity_v}    //= ${"$pkg\::VERSION"};
+                $meta->{entity_date} //= ${"$pkg\::DATE"};
             }
 
             require Perinci::Sub::Normalize;
@@ -111,7 +120,7 @@ sub request {
             # call!
             {
                 no strict 'refs';
-                $res = &{"$mod\::$func"}(@args);
+                $res = &{"$pkg\::$func"}(@args);
             }
 
             # add envelope
@@ -187,7 +196,7 @@ Perinci::Access::Lite - A lightweight Riap client library
 
 =head1 VERSION
 
-This document describes version 0.07 of Perinci::Access::Lite (from Perl distribution Perinci-Access-Lite), released on 2014-10-28.
+This document describes version 0.08 of Perinci::Access::Lite (from Perl distribution Perinci-Access-Lite), released on 2015-12-31.
 
 =head1 DESCRIPTION
 
